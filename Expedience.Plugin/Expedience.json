@@ -1,0 +1,11 @@
+{
+    "Author": "ilitirit",
+    "Name": "Expedience",
+    "Punchline": "Records and uploads Duty Completion times",
+    "Description": "Records and uploads Duty Completion times",
+    "InternalName": "Expedience",
+    "ApplicableVersion": "any",
+    "Tags": [ "duty", "speed" ],
+    "CategoryTags": [ "other" ],
+    "DalamudApiLevel": 10
+}

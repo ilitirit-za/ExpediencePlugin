@@ -1,0 +1,97 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Authors>ilitirit</Authors>
+    <Version>2.0.0.0</Version>
+    <Description>Expedience</Description>
+    <Copyright>(c) 2024 ilitirit</Copyright>
+    <PackageProjectUrl>https://github.com/ilitirit/ExpediencePlugin</PackageProjectUrl>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
+    <Platforms>x64</Platforms>
+    <LangVersion>9.0</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+    <AssemblyName>Expedience</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="ApiUrl.secret" />
+    <None Remove="key.bin" />
+    <None Remove="key.secret" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DalamudPackager" Version="2.1.13" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.6" />
+    <PackageReference Include="murmurhash" Version="1.0.3" />
+    <ProjectReference Include="..\Expedience.Models\Expedience.Models.csproj" />
+    <Reference Include="Dalamud">
+      <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ImGui.NET">
+      <HintPath>$(DalamudLibPath)ImGui.NET.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ImGuiScene">
+      <HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="FFXIVClientStructs">
+      <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+	<Reference Include="Lumina">
+      <HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Lumina.Excel">
+      <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+    <Target Name="Key" BeforeTargets="PrepareForBuild" Condition="'$(PLOGON_SECRET_Key)' != ''">
+	    <PropertyGroup>
+		    <SecretPath>$(ProjectDir)key.secret</SecretPath>
+	    </PropertyGroup>
+	    <WriteLinesToFile File="key.secret" Lines="$(PLOGON_SECRET_Key)" Overwrite="true" />
+    </Target>
+
+    <Target Name="EmbedKey" BeforeTargets="PrepareForBuild" AfterTargets="Key">
+	    <ItemGroup>
+		    <EmbeddedResource Include="key.secret" LogicalName="Expedience.Resources.key.secret" />
+	    </ItemGroup>
+    </Target>
+
+	<Target Name="ApiUrl" BeforeTargets="PrepareForBuild" Condition="'$(PLOGON_SECRET_ApiUrl)' != ''">
+		<PropertyGroup>
+			<SecretPath>$(ProjectDir)ApiUrl.secret</SecretPath>
+		</PropertyGroup>
+		<WriteLinesToFile File="ApiUrl.secret" Lines="$(PLOGON_SECRET_ApiUrl)" Overwrite="true" />
+	</Target>
+
+	<Target Name="EmbedApiUrl" BeforeTargets="PrepareForBuild" AfterTargets="ApiUrl">
+		<ItemGroup>
+			<EmbeddedResource Include="ApiUrl.secret" LogicalName="Expedience.Resources.ApiUrl.secret" />
+		</ItemGroup>
+	</Target>
+	
+  <ItemGroup>
+    <None Update="Expedience.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
+  <Target Name="CopyAssets" BeforeTargets="Build">
+    <Copy SourceFiles="$(ProjectDir)\assets\icon.png" DestinationFolder="$(OutDir)\images" />
+  </Target>
+
+</Project>
