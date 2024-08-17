@@ -11,13 +11,11 @@ namespace Expedience
     {
         private readonly HttpClient _httpClient;
         private readonly string _baseAddress = "";
-		private readonly IPluginLog _pluginLog;
 
-		public ApiClient(string apiEndPointBaseAddress, IPluginLog pluginLog) 
+		public ApiClient(string apiEndPointBaseAddress)
         {
             _httpClient = new HttpClient();
             _baseAddress = apiEndPointBaseAddress;
-			_pluginLog = pluginLog;
 		}
 
         public async Task UploadDutyCompletionResults(List<string> resultsToUpload)
@@ -28,7 +26,7 @@ namespace Expedience
             }
             catch (Exception ex)
             {
-				_pluginLog.Error(ex, $"Error occurred trying to upload completion result: {ex.Message}");
+				Service.PluginLog.Error(ex, $"Error occurred trying to upload completion result: {ex.Message}");
             }
         }
 
@@ -43,16 +41,16 @@ namespace Expedience
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-					_pluginLog.Information("User not found. User names are only generated after the first upload.");
+					Service.PluginLog.Information("User not found. User names are only generated after the first upload.");
                 }
                 else
                 {
-					_pluginLog.Error("Error occurred trying to get user name: {responseCode}", response.StatusCode);
+					Service.PluginLog.Error("Error occurred trying to get user name: {responseCode}", response.StatusCode);
                 }
             }
             catch (Exception ex)
             {
-				_pluginLog.Error(ex, $"Error occurred trying to get user name.");
+				Service.PluginLog.Error(ex, $"Error occurred trying to get user name.");
             }
 
             return null;

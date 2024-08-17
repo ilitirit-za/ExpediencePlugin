@@ -10,6 +10,7 @@ using System.Linq;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using Dalamud.Game.ClientState.Objects.Types;
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
+using Dalamud.Plugin.Services;
 
 namespace Expedience.Services
 {
@@ -26,10 +27,11 @@ namespace Expedience.Services
 
 		private readonly List<uint> _echoBuffList = new List<uint> { 42, 239, 2734 };
 
-		public DutyTracker(ChatManager chatManager, DataManager dataManager, 
+		public DutyTracker(ChatManager chatManager, 
+			DataManager dataManager, 
 			LocalDbManager localDbManager, 
 			UserManager userManager)
-		{ 
+		{
 			this.chatManager = chatManager;
 			_dataManager = dataManager;
 			_localDbManager = localDbManager;
@@ -69,7 +71,7 @@ namespace Expedience.Services
 			}
 		}
 
-		private IEnumerable<GroupMemberInfo> GetAllPartyMembers(IPlayerCharacter localPlayer)
+		private List<GroupMemberInfo> GetAllPartyMembers(IPlayerCharacter localPlayer)
 		{
 			var groupMemberInfos = new List<GroupMemberInfo>();
 
@@ -117,7 +119,7 @@ namespace Expedience.Services
 
 				chatManager.PrintDutyCompletionTime(_currentDuty.ContentName, _currentDuty.GetDuration());
 
-				var result = new DutyCompletionResult(_currentDuty, _dataManager.GetClientInfo(), _userManager.GetUserInfo());
+				var result = new DutyCompletionResult(_currentDuty, _dataManager.ClientInfo, _userManager.GetUserInfo());
 				await _localDbManager.SaveResultToLocalDb(result);
 			}
 			catch (Exception ex)

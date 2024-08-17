@@ -25,11 +25,12 @@
     <None Remove="ApiUrl.secret" />
     <None Remove="key.bin" />
     <None Remove="key.secret" />
+    <None Remove="seed.secret" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="DalamudPackager" Version="2.1.13" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
     <PackageReference Include="murmurhash" Version="1.0.3" />
     <ProjectReference Include="..\Expedience.Models\Expedience.Models.csproj" />
     <Reference Include="Dalamud">
@@ -83,8 +84,8 @@
 			<EmbeddedResource Include="ApiUrl.secret" LogicalName="Expedience.Resources.ApiUrl.secret" />
 		</ItemGroup>
 	</Target>
-	
-  <ItemGroup>
+
+	<ItemGroup>
     <None Update="Expedience.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

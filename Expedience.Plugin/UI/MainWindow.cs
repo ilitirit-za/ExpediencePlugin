@@ -10,35 +10,33 @@ namespace Expedience.UI
 {
 	public class MainWindow : Window, IDisposable
 	{
-		private readonly Plugin _plugin;
-
-		private List<LocalRecord> _localRecords;
+		private List<LocalRecord> _localRecords = new();
 
 		private string _dutySearchText = "";
 		private bool _exactmatch = false;
-		private LocalDbManager localDbManager;
-		private readonly TriStateCheckbox _echoCheckbox = new TriStateCheckbox("Echo", TriStateCheckbox.CheckboxState.PartiallyChecked);
-		private readonly TriStateCheckbox _unsyncedCheckbox = new TriStateCheckbox("Unsynced", TriStateCheckbox.CheckboxState.PartiallyChecked);
-		private readonly TriStateCheckbox _mineCheckbox = new TriStateCheckbox("Min iLevel", TriStateCheckbox.CheckboxState.PartiallyChecked);
-		private readonly TriStateCheckbox _npcCheckbox = new TriStateCheckbox("NPC", TriStateCheckbox.CheckboxState.PartiallyChecked);
+		private readonly LocalDbManager _localDbManager;
+		private readonly TriStateCheckbox _echoCheckbox = new("Echo", TriStateCheckbox.CheckboxState.PartiallyChecked);
+		private readonly TriStateCheckbox _unsyncedCheckbox = new("Unsynced", TriStateCheckbox.CheckboxState.PartiallyChecked);
+		private readonly TriStateCheckbox _mineCheckbox = new("Min iLevel", TriStateCheckbox.CheckboxState.PartiallyChecked);
+		private readonly TriStateCheckbox _npcCheckbox = new("NPC", TriStateCheckbox.CheckboxState.PartiallyChecked);
 
-		public MainWindow(Plugin plugin, LocalDbManager localDbManager)  :
-			base("Expedience", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+		public MainWindow(LocalDbManager localDbManager)  :
+			base($"Expedience v{Service.Plugin.GetVersion()}", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
 		{
-			_plugin = plugin;
-			this.localDbManager = localDbManager;
+			_localDbManager = localDbManager;
 
 			SizeConstraints = new WindowSizeConstraints
 			{
-				MinimumSize = new Vector2(375, 330),
+				MinimumSize = new Vector2(430, 330),
 				MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
 			};
+			
 			GetLocalRecords();
 		}
 
-		private void GetLocalRecords(string filter = null, bool exactMatch = false)
+		private async void GetLocalRecords(string filter = null, bool exactMatch = false)
 		{
-			var query = localDbManager.GetLocalRecordsQuery();
+			var query = await _localDbManager.GetLocalRecordsQuery();
 
 			// Filter by content name
 			if (!string.IsNullOrWhiteSpace(filter))
@@ -104,14 +102,15 @@ namespace Expedience.UI
 					break;
 			}
 
+			await _localDbManager.WaitForSemaphore();
 			// Apply ordering and take the top 10 results
 			_localRecords = query
 				.OrderByDescending(lr => lr.CompletionDate)
 				.Take(10)
 				.ToList();
-		}
 
-		public void Dispose() { }
+			_localDbManager.ReleaseSemaphore();
+		}
 
 		public override void Draw()
 		{
@@ -144,14 +143,14 @@ namespace Expedience.UI
 			if (ImGui.BeginTable("DutyTable", 8, tableStyle, new Vector2(0.0f, 300.0f)))
 			{
 				// Set up the headers for the table
-				ImGui.TableSetupColumn("Duty", ImGuiTableColumnFlags.None, 5f);
-				ImGui.TableSetupColumn("Duration", ImGuiTableColumnFlags.None, 0.2f);
-				ImGui.TableSetupColumn("Echo", ImGuiTableColumnFlags.None, 0.15f);
-				ImGui.TableSetupColumn("Unsynced", ImGuiTableColumnFlags.None, 0.3f);
-				ImGui.TableSetupColumn("MINE", ImGuiTableColumnFlags.None, 0.15f);
-				ImGui.TableSetupColumn("NPC", ImGuiTableColumnFlags.None, 0.15f);
-				ImGui.TableSetupColumn("Completed On", ImGuiTableColumnFlags.None, 0.3f);
-				ImGui.TableSetupColumn("Uploaded", ImGuiTableColumnFlags.None, 0.15f);
+				ImGui.TableSetupColumn("Duty", ImGuiTableColumnFlags.WidthStretch, 250);
+				ImGui.TableSetupColumn("Duration", ImGuiTableColumnFlags.WidthStretch, 80);
+				ImGui.TableSetupColumn("Completed On", ImGuiTableColumnFlags.WidthStretch, 130);
+				ImGui.TableSetupColumn("Echo", ImGuiTableColumnFlags.WidthStretch, 60);
+				ImGui.TableSetupColumn("Unsynced", ImGuiTableColumnFlags.WidthStretch, 60);
+				ImGui.TableSetupColumn("MINE", ImGuiTableColumnFlags.WidthStretch, 60);
+				ImGui.TableSetupColumn("NPC", ImGuiTableColumnFlags.WidthStretch, 60);
+				ImGui.TableSetupColumn("Uploaded", ImGuiTableColumnFlags.WidthStretch, 40);
 				ImGui.TableHeadersRow();
 
 				// Check if sorting is needed
@@ -178,8 +177,11 @@ namespace Expedience.UI
 					ImGui.TableSetColumnIndex(1);
 					ImGui.Text(record.Duration);
 
+					ImGui.TableSetColumnIndex(2);
+					ImGui.Text(record.CompletionDate.ToString("yyyy-MM-dd hh:MM:ss"));
+
 					// Center checkboxes in columns 2-5 and 7
-					for (int i = 2; i <= 5; i++)
+					for (int i = 3; i <= 6; i++)
 					{
 						ImGui.TableSetColumnIndex(i);
 						float columnWidth = ImGui.GetColumnWidth();
@@ -202,9 +204,6 @@ namespace Expedience.UI
 								break;
 						}
 					}
-
-					ImGui.TableSetColumnIndex(6);
-					ImGui.Text(record.CompletionDate.ToString("yyyy-MM-dd hh:MM:ss"));
 
 					ImGui.TableSetColumnIndex(7);
 					float lastColumnWidth = ImGui.GetColumnWidth();
@@ -230,6 +229,8 @@ namespace Expedience.UI
 
 		internal void SortRecords(ImGuiTableSortSpecsPtr sortSpecs)
 		{
+			if (_localRecords == null || _localRecords.Any() == false) return;
+
 			if (sortSpecs.SpecsCount > 0)
 			{
 				var spec = sortSpecs.Specs;
@@ -312,6 +313,8 @@ namespace Expedience.UI
 
 			public CheckboxState GetState() => _state;
 		}
+
+		public void Dispose() { }
 	}
 }
 

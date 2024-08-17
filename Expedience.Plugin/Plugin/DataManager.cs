@@ -3,6 +3,7 @@ using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using Expedience.Models;
 using System;
+using Dalamud.Plugin.Services;
 
 namespace Expedience.Services
 {
@@ -12,7 +13,7 @@ namespace Expedience.Services
 		private ExcelSheet<LogMessage> _logMessages;
 		private List<string> _unrestrictedMessages = new();
 		private ClientInfo _clientInfo = new ClientInfo();
-
+		
 		public DataManager()
 		{
 			Initialize();
@@ -55,10 +56,7 @@ namespace Expedience.Services
 			return _unrestrictedMessages.Contains(message);
 		}
 
-		public ClientInfo GetClientInfo()
-		{
-			return _clientInfo;
-		}
+		public ClientInfo ClientInfo => _clientInfo;
 
 		public static string FormatContentName(LazyRow<ContentFinderCondition> contentFinderCondition)
 		{

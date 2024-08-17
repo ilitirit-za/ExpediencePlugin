@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text;
 using System.Threading.Tasks;
-using Dalamud.Plugin.Services;
 using Expedience.Models;
 using Murmur;
 
@@ -11,47 +10,52 @@ namespace Expedience
 	{
 		private readonly LocalDbManager _localDbManager;
 		private readonly ApiClient _apiClient;
-		
+
 		private string _userName;
 		private UserInfo _userInfo;
-		private readonly IClientState _clientState;
 
-		public string UserName => _userName;
-		public UserManager(LocalDbManager localDbManager, ApiClient apiClient, IClientState clientState)
+		public string UserName { get { return  _userName; } private set { _userName = value; } }
+		public UserManager(LocalDbManager localDbManager, ApiClient apiClient)
 		{
 			_localDbManager = localDbManager;
 			_apiClient = apiClient;
-			_clientState = clientState;
 		}
 
-		internal void OnLogin()
+		public void OnLogin()
 		{
 			_userInfo = null;
-			Task.Factory.StartNew(() => TryPopulateUserName());
+			Service.PluginLog.Info($"Retrieved User Name from API: {_userName}");
+			Task.Factory.StartNew(TryPopulateUserName);
 		}
 
-		private async Task<bool> TryPopulateUserName()
+		public async Task<bool> TryPopulateUserName()
 		{
 			try
 			{
-				var playerName = _clientState.LocalPlayer.Name.TextValue;
-				var worldId = _clientState.LocalPlayer.HomeWorld.GameData.RowId;
+				var playerName = Service.ClientState.LocalPlayer.Name.TextValue;
+				var worldId = Service.ClientState.LocalPlayer.HomeWorld.GameData.RowId;
 				var userHash = GetHash($"{worldId}-{playerName}");
+
 				var localUser = await _localDbManager.GetLocalUser(worldId, userHash);
 
 				if (localUser != null)
 				{
 					_userName = localUser.UserName;
+					Service.PluginLog.Info($"Retrieved Local User Name {_userName}");
 					return true;
 				}
-
-				_userName = await _apiClient.GetUserName((int)worldId, userHash);
-
-				if (String.IsNullOrWhiteSpace(_userName) == false)
+				else
 				{
-					await Task.Run(() => _localDbManager.SaveLocalUser((int)worldId, userHash, _userName));
-					return true;
+					_userName = await _apiClient.GetUserName((int)worldId, userHash);
+					Service.PluginLog.Info($"Retrieved User Name from API: {_userName}");
+
+					if (String.IsNullOrWhiteSpace(_userName) == false)
+					{
+						await Task.Run(() => _localDbManager.SaveLocalUser((int)worldId, userHash, _userName));
+						return true;
+					}
 				}
+				
 
 				return false;
 			}
@@ -69,8 +73,8 @@ namespace Expedience
 			{
 				if (_userInfo == null)
 				{
-					var playerName = _clientState.LocalPlayer.Name.TextValue;
-					var homeWorld = _clientState.LocalPlayer.HomeWorld.GameData;
+					var playerName = Service.ClientState.LocalPlayer.Name.TextValue;
+					var homeWorld = Service.ClientState.LocalPlayer.HomeWorld.GameData;
 					_userInfo = new UserInfo
 					{
 						UserId = GetHash($"{homeWorld.RowId}-{playerName}"),
