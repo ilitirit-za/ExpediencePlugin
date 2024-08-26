@@ -43,13 +43,8 @@ namespace Expedience
 			_userManager = new UserManager(_localDbManager, _apiClient);
 			Task.Run(_userManager.TryPopulateUserName);
 
-			_chatManager = new ChatManager(pluginInterface, _mainWindow);
 			_dataManager = new DataManager();
-			_dutyTracker = new DutyTracker(_chatManager, _dataManager, _localDbManager, _userManager);
 			
-			InitializeEventHandlers();
-			InitializeCommands(commandManager);
-
 			_cts = new CancellationTokenSource();
 			Task.Factory.StartNew(() => UploadResults(_cts.Token));
 
@@ -59,7 +54,11 @@ namespace Expedience
 			_windowSystem.AddWindow(_mainWindow);
 			_windowSystem.AddWindow(_configWindow);
 
-			
+			_chatManager = new ChatManager(pluginInterface, _mainWindow);
+			_dutyTracker = new DutyTracker(_chatManager, _dataManager, _localDbManager, _userManager);
+
+			InitializeEventHandlers();
+			InitializeCommands(commandManager);
 		}
 
 		public string GetVersion() => _dataManager.ClientInfo.PluginVersion;

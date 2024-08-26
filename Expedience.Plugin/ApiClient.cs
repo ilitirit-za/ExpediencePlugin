@@ -22,8 +22,10 @@ namespace Expedience
         {
             try
             {
-                await _httpClient.PostAsync($"{_baseAddress}/api/DutyCompletion", JsonContent.Create(resultsToUpload));
-            }
+				Service.PluginLog.Debug($"Uploading {resultsToUpload.Count} results");
+				var response = await _httpClient.PostAsync($"{_baseAddress}/api/DutyCompletion", JsonContent.Create(resultsToUpload));
+				Service.PluginLog.Debug($"Response uploaded: {response.StatusCode}");
+			}
             catch (Exception ex)
             {
 				Service.PluginLog.Error(ex, $"Error occurred trying to upload completion result: {ex.Message}");

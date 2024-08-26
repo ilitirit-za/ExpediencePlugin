@@ -48,7 +48,7 @@ namespace Expedience
 			Service.ChatGui.Print(message);
 		}
 
-		public void PrintMessage(string message) => Service.ChatGui.Print(message);
+		public static void PrintMessage(string message) => Service.ChatGui.Print(message);
 
 		private void OnChatLinkClick(uint commandId, SeString @string)
 		{

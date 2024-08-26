@@ -40,7 +40,7 @@ namespace Expedience
 			await WaitForSemaphore();
 			try
 			{
-				return _dbContext.LocalRecords.AsQueryable().Where(lr => lr.User == Service.Plugin.GetUserName());
+				return _dbContext.LocalRecords.AsQueryable();
 			}
 			catch (Exception ex)
 			{
@@ -91,9 +91,8 @@ namespace Expedience
 			}
 		}
 
-		public async Task MarkRecordsAsUploaded(List<LocalRecord> records)
+		private async Task MarkRecordsAsUploaded(List<LocalRecord> records)
 		{
-			await WaitForSemaphore();
 			try
 			{
 				foreach (var record in records)
@@ -108,10 +107,6 @@ namespace Expedience
 				Service.PluginLog.Error(ex, $"Error occurred in MarkRecordsAsUploaded: {ex.Message}");
 				throw;
 			}
-			finally
-			{
-				ReleaseSemaphore();
-			}
 		}
 
 		public async Task UploadPendingResults(ApiClient apiClient)
@@ -119,7 +114,9 @@ namespace Expedience
 			await WaitForSemaphore();
 			try
 			{
+				Service.PluginLog.Debug("Getting records to upload");
 				var records = await _dbContext.LocalRecords.Where(l => !l.IsUploaded).ToListAsync();
+				Service.PluginLog.Debug($"Found {records.Count} records to upload");
 				var resultsToUpload = records.Select(r => r.Payload).ToList();
 
 				if (resultsToUpload.Any())
@@ -187,7 +184,7 @@ namespace Expedience
 		{
 			_awaitCount++;
 			Service.PluginLog.Info($"Semaphore awaited by {callerName}. Wait count {_awaitCount}");
-			await _semaphore.WaitAsync().ConfigureAwait(false);
+			await _semaphore.WaitAsync();
 		}
 
 		public void ReleaseSemaphore([CallerMemberName] string callerName = "")

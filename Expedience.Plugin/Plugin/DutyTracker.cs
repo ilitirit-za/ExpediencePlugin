@@ -53,7 +53,7 @@ namespace Expedience.Services
 				var contentName = DataManager.FormatContentName(territory.ContentFinderCondition);
 				var hasEcho = CheckForEchoStatus(localPlayer);
 
-				chatManager.PrintMessage($"Expedience: {contentName} started at {DateTime.UtcNow:HH:mm:ss}.");
+				ChatManager.PrintMessage($"Expedience: {contentName} started at {DateTime.UtcNow:HH:mm:ss}.");
 
 				_currentDuty.Player = CreatePlayerInfo(localPlayer);
 				_currentDuty.TerritoryId = territoryType;
@@ -117,7 +117,8 @@ namespace Expedience.Services
 				_currentDuty.EndDuty();
 				_currentDuty.IsUnrestricted = _currentDutyIsUnsynced;
 
-				chatManager.PrintDutyCompletionTime(_currentDuty.ContentName, _currentDuty.GetDuration());
+				chatManager.PrintDutyCompletionTime(_currentDuty.ContentName ?? _currentDuty.PlaceName, 
+					_currentDuty.GetDuration());
 
 				var result = new DutyCompletionResult(_currentDuty, _dataManager.ClientInfo, _userManager.GetUserInfo());
 				await _localDbManager.SaveResultToLocalDb(result);
