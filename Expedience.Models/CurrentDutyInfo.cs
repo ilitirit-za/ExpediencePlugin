@@ -25,8 +25,9 @@ namespace Expedience.Models
 
         public string DataCenter { get; set; }
         public bool IsMinILevel { get; set; }
+		public int? ContentFinderConditionId { get; set; }
 
-        public void EndDuty()
+		public void EndDuty()
         {
             _stopwatch.Stop();
             EndTime = DateTime.UtcNow;

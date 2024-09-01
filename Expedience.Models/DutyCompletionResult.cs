@@ -22,6 +22,7 @@ namespace Expedience.Models
                 IsMinILevel = currentDuty.IsMinILevel,
                 IsNpcSupported = currentDuty.PartyMembers.Any(p => p.IsNpc),
                 HasEcho = currentDuty.HasEcho,
+                ContentFinderConditionId = currentDuty.ContentFinderConditionId
             };
 
             PlayerInfo = new PlayerInfo

@@ -62,7 +62,7 @@ namespace Expedience.Services
 				_currentDuty.HasEcho = hasEcho;
 				_currentDuty.IsMinILevel = IsMinILevel();
 				_currentDuty.DataCenter = localPlayer.CurrentWorld.GameData.DataCenter.Value?.Name ?? string.Empty;
-
+				_currentDuty.ContentFinderConditionId = (int?)territory.ContentFinderCondition.Value.RowId;
 				_currentDuty.PartyMembers.AddRange(GetAllPartyMembers(localPlayer));
 			}
 			catch (Exception ex)
