@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Expedience.Models
 {
     public class DutyCompletionResult
@@ -21,6 +18,7 @@ namespace Expedience.Models
                 IsUnrestricted = currentDuty.IsUnrestricted,
                 IsMinILevel = currentDuty.IsMinILevel,
                 IsNpcSupported = currentDuty.PartyMembers.Any(p => p.IsNpc),
+                ContentFinderConditionId = (int?)currentDuty.ContentFinderConditionId,
                 HasEcho = currentDuty.HasEcho,
             };
 

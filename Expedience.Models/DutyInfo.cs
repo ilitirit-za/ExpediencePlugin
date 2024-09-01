@@ -15,5 +15,6 @@ namespace Expedience.Models
         public bool IsNpcSupported { get; set; }
         public bool IsMinILevel { get; set; }
         public string PlaceName { get; set; }
-    }
+		public int? ContentFinderConditionId { get; set; }
+	}
 }
